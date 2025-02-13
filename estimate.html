@@ -57,7 +57,7 @@
             document.getElementById("error").style.display = "block";
             document.querySelector(".loading").style.display = "none";
         } else {
-            fetch(`https://script.google.com/macros/sAKfycbxqBCZH-cc7RqRzVzT1RKfrldxjy5WUSmOSBo_kgSIdUs11iZrHyu5ivM2-2LrQyYx2Ow/exec?job=${jobNumber}`)
+            fetch(`https://script.google.com/macros/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`)
                 .then(response => response.json())
                 .then(data => {
                     document.querySelector(".loading").style.display = "none";
