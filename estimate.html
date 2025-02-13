@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Your Estimate Summary</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .loading { font-style: italic; }
+    #summary { white-space: pre-wrap; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h1>Your Estimate Summary</h1>
+  <div id="loading" class="loading">Processing your submission... Please wait.</div>
+  <div id="summary"></div>
+  <script>
+    // Extract the job number from the URL query string, e.g., ?job=JOB-10082
+    const params = new URLSearchParams(window.location.search);
+    const jobNumber = params.get('job');
+    if (!jobNumber) {
+      document.getElementById('loading').textContent = 'Error: No job number provided in the URL.';
+    } else {
+      // Replace with your deployed Apps Script web app URL
+      const apiEndpoint = 'https://script.google.com/macros/s/YOUR_SCRIPT_DEPLOYMENT_ID/exec?job=' + encodeURIComponent(jobNumber);
+      
+      fetch(apiEndpoint)
+        .then(response => response.json())
+        .then(data => {
+          document.getElementById('loading').style.display = 'none';
+          if (data.summary) {
+            document.getElementById('summary').textContent = data.summary;
+          } else {
+            document.getElementById('summary').textContent = 'Summary not available yet. Please check back later.';
+          }
+        })
+        .catch(error => {
+          document.getElementById('loading').textContent = 'Error fetching summary: ' + error;
+        });
+    }
+  </script>
+</body>
+</html>
