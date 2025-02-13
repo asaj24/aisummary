@@ -3,71 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Estimate Summary</title>
+    <title>Estimate Summary</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
             text-align: center;
-            background-color: #F5E9D9;
-            color: #2E4660;
             padding: 20px;
         }
         .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: auto;
-            padding: 20px;
             background: white;
-            border-radius: 10px;
+            padding: 20px;
+            border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            font-family: 'Georgia', serif;
+            color: #2E4660;
+        }
+        .summary {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 16px;
+            line-height: 1.6;
         }
         .loading {
             font-size: 18px;
             font-weight: bold;
+            color: #555;
         }
-        .error {
-            color: red;
-            font-weight: bold;
+        .print-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #2E4660;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .print-btn:hover {
+            background-color: #1d334b;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Your Estimate Summary</h2>
-        <p class="loading">Analyzing your request, please wait...</p>
-        <p id="summary"></p>
+        <h1>Your Estimate Summary</h1>
+        <p class="loading">Analyzing your response... Please wait.</p>
+        <div class="summary" id="summary" style="display:none;"></div>
+        <button class="print-btn" id="printBtn" style="display:none;" onclick="window.print();">Print Summary</button>
     </div>
 
     <script>
-        function fetchSummary(jobNumber) {
-            const url = `https://script.google.com/macros/s/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`;
-            
-            setTimeout(() => {  // Wait a few seconds before fetching
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        document.querySelector(".loading").style.display = "none";
-                        
-                        if (data.error) {
-                            document.getElementById("summary").innerHTML = `<p class='error'>${data.error}. Please refresh or check later.</p>`;
-                        } else {
-                            document.getElementById("summary").innerText = data.summary;
-                        }
-                    })
-                    .catch(() => {
-                        document.querySelector(".loading").style.display = "none";
-                        document.getElementById("summary").innerHTML = `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
-                    });
-            }, 5000); // Wait 5 seconds before fetching
-        }
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(fetchSummary, 5000); // Delay fetching for 5 seconds
+        });
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const jobNumber = urlParams.get("job");
-        
-        if (jobNumber) {
-            fetchSummary(jobNumber);
-        } else {
-            document.querySelector(".loading").style.display = "none";
-            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
+        function fetchSummary() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const jobNumber = urlParams.get("job");
+            
+            if (!jobNumber) {
+                document.querySelector(".loading").textContent = "Error: Job number missing.";
+                return;
+            }
+            
+            fetch(`https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec?job=${jobNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error || !data.summary) {
+                        document.querySelector(".loading").textContent = "Summary not available. Please refresh later.";
+                    } else {
+                        document.querySelector(".loading").style.display = "none";
+                        document.getElementById("summary").textContent = data.summary;
+                        document.getElementById("summary").style.display = "block";
+                        document.getElementById("printBtn").style.display = "block";
+                    }
+                })
+                .catch(() => {
+                    document.querySelector(".loading").textContent = "Error fetching summary. Please refresh later.";
+                });
         }
     </script>
 </body>
