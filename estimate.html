@@ -52,7 +52,7 @@
 <body>
     <div class="container">
         <h1>Your Estimate Summary</h1>
-        <p class="loading">Analyzing your response... Please wait.</p>
+        <p class="loading">Our AI is analyzing your response... Please wait.</p>
         <div class="summary" id="summary" style="display:none;"></div>
         <button class="print-btn" id="printBtn" style="display:none;" onclick="window.print();">Print Summary</button>
     </div>
@@ -71,7 +71,7 @@
                 return;
             }
             
-            fetch(`https://script.google.com/macros/s/YOUR_DEPLOY_ID/exec?job=${jobNumber}`)
+            fetch(`https://script.google.com/macros/s/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.error || !data.summary) {
