@@ -21,7 +21,7 @@
       document.getElementById('loading').textContent = 'Error: No job number provided in the URL.';
     } else {
       // Replace with your deployed Apps Script web app URL
-      const apiEndpoint = 'https://script.google.com/macros/s/YOUR_SCRIPT_DEPLOYMENT_ID/exec?job=' + encodeURIComponent(jobNumber);
+      const apiEndpoint = 'https://script.google.com/macros/s/AKfycby1meeYxHfCIXwy6gL9poGtg7NynHerNxn395ti7McyaeCOEBhLHAAaiTd9hT65kYGkGQ/exec?job=' + encodeURIComponent(jobNumber);
       
       fetch(apiEndpoint)
         .then(response => response.json())
