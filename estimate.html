@@ -3,36 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estimate Summary</title>
+    <title>Your Estimate Summary</title>
     <style>
         body {
             font-family: Arial, sans-serif;
+            text-align: center;
             background-color: #F5E9D9;
             color: #2E4660;
-            text-align: center;
-            margin: 0;
-            padding: 0;
+            padding: 20px;
         }
         .container {
-            max-width: 800px;
-            margin: 50px auto;
+            max-width: 600px;
+            margin: auto;
             padding: 20px;
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-        h1 {
-            color: #2E4660;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
         .loading {
             font-size: 18px;
-            color: #000;
-        }
-        .summary {
-            text-align: left;
-            border-top: 3px solid #2E4660;
-            padding-top: 20px;
-            margin-top: 20px;
+            font-weight: bold;
         }
         .error {
             color: red;
@@ -42,38 +32,42 @@
 </head>
 <body>
     <div class="container">
-        <h1>Your Estimate Summary</h1>
+        <h2>Your Estimate Summary</h2>
         <p class="loading">Analyzing your request, please wait...</p>
-        <div id="summary" class="summary" style="display:none;"></div>
-        <p id="error" class="error" style="display:none;"></p>
+        <p id="summary"></p>
     </div>
-    
+
     <script>
-        const params = new URLSearchParams(window.location.search);
-        const jobNumber = params.get('job');
+        function fetchSummary(jobNumber) {
+            const url = `https://script.google.com/macros/s/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`;
+            
+            setTimeout(() => {  // Wait a few seconds before fetching
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.querySelector(".loading").style.display = "none";
+                        
+                        if (data.error) {
+                            document.getElementById("summary").innerHTML = `<p class='error'>${data.error}. Please refresh or check later.</p>`;
+                        } else {
+                            document.getElementById("summary").innerText = data.summary;
+                        }
+                    })
+                    .catch(() => {
+                        document.querySelector(".loading").style.display = "none";
+                        document.getElementById("summary").innerHTML = `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
+                    });
+            }, 5000); // Wait 5 seconds before fetching
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobNumber = urlParams.get("job");
         
-        if (!jobNumber) {
-            document.getElementById("error").innerText = "Error: Job number missing.";
-            document.getElementById("error").style.display = "block";
-            document.querySelector(".loading").style.display = "none";
+        if (jobNumber) {
+            fetchSummary(jobNumber);
         } else {
-            fetch(`https://script.google.com/macros/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`)
-                .then(response => response.json())
-                .then(data => {
-                    document.querySelector(".loading").style.display = "none";
-                    if (data.error) {
-                        document.getElementById("error").innerText = `Error: ${data.error}`;
-                        document.getElementById("error").style.display = "block";
-                    } else {
-                        document.getElementById("summary").innerText = data.summary;
-                        document.getElementById("summary").style.display = "block";
-                    }
-                })
-                .catch(error => {
-                    document.querySelector(".loading").style.display = "none";
-                    document.getElementById("error").innerText = "Failed to fetch summary. Please try again later.";
-                    document.getElementById("error").style.display = "block";
-                });
+            document.querySelector(".loading").style.display = "none";
+            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
         }
     </script>
 </body>
