@@ -1,42 +1,80 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Your Estimate Summary</title>
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .loading { font-style: italic; }
-    #summary { white-space: pre-wrap; margin-top: 20px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estimate Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #F5E9D9;
+            color: #2E4660;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #2E4660;
+        }
+        .loading {
+            font-size: 18px;
+            color: #000;
+        }
+        .summary {
+            text-align: left;
+            border-top: 3px solid #2E4660;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
-  <h1>Your Estimate Summary</h1>
-  <div id="loading" class="loading">Processing your submission... Please wait.</div>
-  <div id="summary"></div>
-  <script>
-    // Extract the job number from the URL query string, e.g., ?job=JOB-10082
-    const params = new URLSearchParams(window.location.search);
-    const jobNumber = params.get('job');
-    if (!jobNumber) {
-      document.getElementById('loading').textContent = 'Error: No job number provided in the URL.';
-    } else {
-      // Replace with your deployed Apps Script web app URL
-      const apiEndpoint = 'https://script.google.com/macros/s/AKfycbxqBCZH-cc7RqRzVzT1RKfrldxjy5WUSmOSBo_kgSIdUs11iZrHyu5ivM2-2LrQyYx2Ow/exec?job=' + encodeURIComponent(jobNumber);
-      
-      fetch(apiEndpoint)
-        .then(response => response.json())
-        .then(data => {
-          document.getElementById('loading').style.display = 'none';
-          if (data.summary) {
-            document.getElementById('summary').textContent = data.summary;
-          } else {
-            document.getElementById('summary').textContent = 'Summary not available yet. Please check back later.';
-          }
-        })
-        .catch(error => {
-          document.getElementById('loading').textContent = 'Error fetching summary: ' + error;
-        });
-    }
-  </script>
+    <div class="container">
+        <h1>Your Estimate Summary</h1>
+        <p class="loading">Analyzing your request, please wait...</p>
+        <div id="summary" class="summary" style="display:none;"></div>
+        <p id="error" class="error" style="display:none;"></p>
+    </div>
+    
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const jobNumber = params.get('job');
+        
+        if (!jobNumber) {
+            document.getElementById("error").innerText = "Error: Job number missing.";
+            document.getElementById("error").style.display = "block";
+            document.querySelector(".loading").style.display = "none";
+        } else {
+            fetch(`https://script.google.com/macros/sAKfycbxqBCZH-cc7RqRzVzT1RKfrldxjy5WUSmOSBo_kgSIdUs11iZrHyu5ivM2-2LrQyYx2Ow/exec?job=${jobNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.querySelector(".loading").style.display = "none";
+                    if (data.error) {
+                        document.getElementById("error").innerText = `Error: ${data.error}`;
+                        document.getElementById("error").style.display = "block";
+                    } else {
+                        document.getElementById("summary").innerText = data.summary;
+                        document.getElementById("summary").style.display = "block";
+                    }
+                })
+                .catch(error => {
+                    document.querySelector(".loading").style.display = "none";
+                    document.getElementById("error").innerText = "Failed to fetch summary. Please try again later.";
+                    document.getElementById("error").style.display = "block";
+                });
+        }
+    </script>
 </body>
 </html>
