@@ -3,89 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estimate Summary</title>
+    <title>Your Estimate Summary</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
             text-align: center;
+            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+            color: #2E4660;
             padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         .container {
-            max-width: 800px;
+            max-width: 600px;
+            width: 100%;
             margin: auto;
+            padding: 30px;
             background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+        h2 {
             font-family: 'Georgia', serif;
+            font-size: 32px;
+            margin-bottom: 20px;
             color: #2E4660;
-        }
-        .summary {
-            margin-top: 20px;
-            text-align: left;
-            font-size: 16px;
-            line-height: 1.6;
         }
         .loading {
             font-size: 18px;
             font-weight: bold;
-            color: #555;
+            color: #2E4660;
         }
-        .print-btn {
-            margin-top: 20px;
-            padding: 10px 20px;
+        .error {
+            color: #FF4A4A;
+            font-weight: bold;
+        }
+        #summary {
             font-size: 16px;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #2E4660;
+        }
+        .print-button {
+            margin-top: 30px;
+        }
+        .print-button button {
             background-color: #2E4660;
             color: white;
             border: none;
-            cursor: pointer;
+            padding: 12px 24px;
+            font-size: 16px;
             border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
-        .print-btn:hover {
-            background-color: #1d334b;
+        .print-button button:hover {
+            background-color: #1A2C3D;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .print-button {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Your Estimate Summary</h1>
-        <p class="loading">Our AI is analyzing your response... Please wait.</p>
-        <div class="summary" id="summary" style="display:none;"></div>
-        <button class="print-btn" id="printBtn" style="display:none;" onclick="window.print();">Print Summary</button>
+        <h2>Your Estimate Summary</h2>
+        <p class="loading">Analyzing your request, please wait...</p>
+        <p id="summary"></p>
+        <div class="print-button">
+            <button onclick="window.print()">Print Summary</button>
+        </div>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(fetchSummary, 5000); // Delay fetching for 5 seconds
-        });
-
-        function fetchSummary() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const jobNumber = urlParams.get("job");
+        function fetchSummary(jobNumber) {
+            const url = `https://script.google.com/macros/s/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`;
             
-            if (!jobNumber) {
-                document.querySelector(".loading").textContent = "Error: Job number missing.";
-                return;
-            }
-            
-            fetch(`https://script.google.com/macros/s/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.error || !data.summary) {
-                        document.querySelector(".loading").textContent = "Summary not available. Please refresh later.";
-                    } else {
+            setTimeout(() => {  // Wait a few seconds before fetching
+                fetch(url)
+                    .then(response => response.json())
+                    .then(data => {
                         document.querySelector(".loading").style.display = "none";
-                        document.getElementById("summary").textContent = data.summary;
-                        document.getElementById("summary").style.display = "block";
-                        document.getElementById("printBtn").style.display = "block";
-                    }
-                })
-                .catch(() => {
-                    document.querySelector(".loading").textContent = "Error fetching summary. Please refresh later.";
-                });
+                        
+                        if (data.error) {
+                            document.getElementById("summary").innerHTML = `<p class='error'>${data.error}. Please refresh or check later.</p>`;
+                        } else {
+                            document.getElementById("summary").innerText = data.summary;
+                        }
+                    })
+                    .catch(() => {
+                        document.querySelector(".loading").style.display = "none";
+                        document.getElementById("summary").innerHTML = `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
+                    });
+            }, 5000); // Wait 5 seconds before fetching
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobNumber = urlParams.get("job");
+        
+        if (jobNumber) {
+            fetchSummary(jobNumber);
+        } else {
+            document.querySelector(".loading").style.display = "none";
+            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
         }
     </script>
 </body>
