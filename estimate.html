@@ -107,7 +107,7 @@
                         document.querySelector(".loading").style.display = "none";
                         document.getElementById("summary").innerHTML = `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
                     });
-            }, 5000); // Wait 5 seconds before fetching
+            }, 20000); // Wait 5 seconds before fetching
         }
 
         const urlParams = new URLSearchParams(window.location.search);
