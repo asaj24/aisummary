@@ -1,162 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Your Estimate Summary</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
-      color: #2E4660;
-      padding: 20px;
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .container {
-      max-width: 600px;
-      width: 100%;
-      margin: auto;
-      padding: 30px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      font-family: 'Georgia', serif;
-      font-size: 32px;
-      margin-bottom: 20px;
-      color: #2E4660;
-    }
-    .loading {
-      font-size: 18px;
-      font-weight: bold;
-      color: #2E4660;
-    }
-    .error {
-      color: #FF4A4A;
-      font-weight: bold;
-    }
-    #summary {
-      font-size: 16px;
-      line-height: 1.6;
-      margin-top: 20px;
-      color: #2E4660;
-    }
-    .print-button {
-      margin-top: 30px;
-    }
-    .print-button button {
-      background-color: #2E4660;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .print-button button:hover {
-      background-color: #1A2C3D;
-    }
-    @media print {
-      body {
-        background: white;
-      }
-      .container {
-        box-shadow: none;
-        border: none;
-      }
-      .print-button {
-        display: none;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Estimate Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+            color: #2E4660;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-family: 'Georgia', serif;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #2E4660;
+        }
+        .loading {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E4660;
+        }
+        .error {
+            color: #FF4A4A;
+            font-weight: bold;
+        }
+        #summary {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #2E4660;
+        }
+        .print-button {
+            margin-top: 30px;
+        }
+        .print-button button {
+            background-color: #2E4660;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .print-button button:hover {
+            background-color: #1A2C3D;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .print-button {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Your Estimate Summary</h2>
-    <!-- This loading message is shown immediately -->
-    <p class="loading">Our AI is analyzing your request, please wait (10-20 sec)...</p>
-    <p id="summary"></p>
-    <div class="print-button">
-      <button onclick="window.print()">Print Summary</button>
+    <div class="container">
+        <h2>Your Estimate Summary</h2>
+        <p class="loading">Our AI is analyzing your request, please wait (10-20 sec)...</p>
+        <p id="summary"></p>
+        <div class="print-button">
+            <button onclick="window.print()">Print Summary</button>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // Helper: performs a fetch but rejects if it takes longer than "timeout" (ms)
-    function fetchWithTimeout(url, timeout = 20000) {
-      return new Promise((resolve, reject) => {
-        const timer = setTimeout(() => {
-          reject(new Error("Timeout"));
-        }, timeout);
+    <script>
+        function fetchSummary(jobNumber, attempt = 1) {
+            const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
+            const loadingMessage = document.querySelector(".loading");
+            const summaryElement = document.getElementById("summary");
 
-        fetch(url)
-          .then(response => response.json())
-          .then(data => {
-            clearTimeout(timer);
-            resolve(data);
-          })
-          .catch(err => {
-            clearTimeout(timer);
-            reject(err);
-          });
-      });
-    }
+            let timeout = setTimeout(() => {
+                if (attempt === 1) {
+                    loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
+                    fetchSummary(jobNumber, 2); // Retry once
+                } else {
+                    loadingMessage.style.display = "none";
+                    summaryElement.innerHTML = `<p class='error'>Failed to fetch summary after multiple attempts. Please try again later.</p>`;
+                }
+            }, 20000); // 20-second timeout
 
-    // Try to fetch summary. On first failure (error or timeout) update the message and try again.
-    function fetchSummary(jobNumber, attempt = 1) {
-      const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
-      
-      fetchWithTimeout(url, 20000)
-        .then(data => {
-          // If the API returns an error message, treat it as a failure
-          if (data.error) {
-            if (attempt === 1) {
-              document.querySelector(".loading").innerText =
-                "We're trying to analyze again, please wait 20 more seconds";
-              fetchSummary(jobNumber, 2);
-            } else {
-              document.querySelector(".loading").style.display = "none";
-              document.getElementById("summary").innerHTML =
-                `<p class='error'>${data.error}. Please refresh or check later.</p>`;
-            }
-          } else {
-            // Success: hide loading and display summary
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    clearTimeout(timeout); // Clear the timeout if the request completes
+                    loadingMessage.style.display = "none";
+                    
+                    if (data.error) {
+                        summaryElement.innerHTML = `<p class='error'>${data.error}. Please refresh or check later.</p>`;
+                    } else {
+                        summaryElement.innerText = data.summary;
+                    }
+                })
+                .catch(() => {
+                    clearTimeout(timeout); // Clear the timeout if the request fails
+                    if (attempt === 1) {
+                        loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
+                        fetchSummary(jobNumber, 2); // Retry once
+                    } else {
+                        loadingMessage.style.display = "none";
+                        summaryElement.innerHTML = `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
+                    }
+                });
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobNumber = urlParams.get("job");
+        
+        if (jobNumber) {
+            fetchSummary(jobNumber);
+        } else {
             document.querySelector(".loading").style.display = "none";
-            document.getElementById("summary").innerText = data.summary;
-          }
-        })
-        .catch(() => {
-          // For network errors or timeout failures
-          if (attempt === 1) {
-            document.querySelector(".loading").innerText =
-              "We're trying to analyze again, please wait 20 more seconds";
-            fetchSummary(jobNumber, 2);
-          } else {
-            document.querySelector(".loading").style.display = "none";
-            document.getElementById("summary").innerHTML =
-              `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
-          }
-        });
-    }
-
-    // Get job number from URL and initiate fetching
-    const urlParams = new URLSearchParams(window.location.search);
-    const jobNumber = urlParams.get("job");
-
-    if (jobNumber) {
-      fetchSummary(jobNumber);
-    } else {
-      document.querySelector(".loading").style.display = "none";
-      document.getElementById("summary").innerHTML =
-        `<p class='error'>Job number missing.</p>`;
-    }
-  </script>
+            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
+        }
+    </script>
 </body>
 </html>
