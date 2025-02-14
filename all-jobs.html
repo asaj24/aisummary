@@ -83,6 +83,9 @@
         .print-button button:hover {
             background-color: #1A2C3D;
         }
+        .password-protected {
+            display: none; /* Hide content by default */
+        }
         @media print {
             body {
                 background: white;
@@ -103,27 +106,43 @@
 </head>
 <body>
 
-    <h2>All Job Summaries</h2>
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search by Job Number..." oninput="filterJobs()">
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Job Number</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody id="jobTable">
-            <tr><td colspan="2">Loading...</td></tr>
-        </tbody>
-    </table>
+    <div class="password-protected" id="protectedContent">
+        <h2>All Job Summaries</h2>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search by Job Number..." oninput="filterJobs()">
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Job Number</th>
+                    <th>Summary</th>
+                </tr>
+            </thead>
+            <tbody id="jobTable">
+                <tr><td colspan="2">Loading...</td></tr>
+            </tbody>
+        </table>
 
-    <div class="print-button">
-        <button onclick="window.print()">Print Table</button>
+        <div class="print-button">
+            <button onclick="window.print()">Print Table</button>
+        </div>
     </div>
 
     <script>
+        // Password protection
+        const password = "IamAdmin"; // Set the password
+        const userPassword = prompt("Please enter the password to access this page:");
+
+        if (userPassword === password) {
+            // If password is correct, show the content
+            document.getElementById("protectedContent").style.display = "block";
+        } else {
+            // If password is incorrect, show an error and redirect or display a message
+            alert("Incorrect password. Access denied.");
+            window.location.href = "about:blank"; // Redirect to a blank page or another page
+        }
+
+        // Fetch jobs and populate the table
         async function fetchJobs() {
             try {
                 const response = await fetch("https://script.google.com/macros/s/AKfycbzDhsCPFxxE5V-Aib6J326Qh-fyHFkpv690RIap6e4bLprvLJ7DdV2Ba8Eleino-62u/exec");
@@ -149,6 +168,7 @@
             }
         }
 
+        // Filter jobs based on search input
         function filterJobs() {
             const input = document.getElementById("searchInput").value.toLowerCase();
             const rows = document.querySelectorAll("#jobTable tr");
@@ -163,7 +183,10 @@
             });
         }
 
-        fetchJobs();
+        // Fetch jobs only if the password is correct
+        if (userPassword === password) {
+            fetchJobs();
+        }
     </script>
 
 </body>
