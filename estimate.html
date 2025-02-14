@@ -80,7 +80,7 @@
 <body>
     <div class="container">
         <h2>Your Estimate Summary</h2>
-        <p class="loading">Our AI is analyzing your request, please wait (10-20 sec)...</p>
+        <p class="loading">Our AI is analyzing your request, please wait...</p>
         <p id="summary"></p>
         <div class="print-button">
             <button onclick="window.print()">Print Summary</button>
@@ -88,7 +88,7 @@
     </div>
 
     <script>
-        function fetchSummary(jobNumber, startTime) {
+        function fetchSummary(jobNumber) {
             const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
             const loadingMessage = document.querySelector(".loading");
             const summaryElement = document.getElementById("summary");
@@ -101,31 +101,15 @@
                         loadingMessage.style.display = "none";
                         summaryElement.innerText = data.summary;
                     } else {
-                        // If summary is not available, check if 40 seconds have passed
-                        const currentTime = Date.now();
-                        if (currentTime - startTime < 40000) {
-                            // If within 40 seconds, retry after 20 seconds
-                            loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
-                            setTimeout(() => fetchSummary(jobNumber, startTime), 20000);
-                        } else {
-                            // If 40 seconds have passed, show an error message
-                            loadingMessage.style.display = "none";
-                            summaryElement.innerHTML = `<p class='error'>Summary not available yet. Please check back later.</p>`;
-                        }
+                        // If summary is not available, retry after a short delay
+                        loadingMessage.innerText = "We're still analyzing your request, please wait...";
+                        setTimeout(() => fetchSummary(jobNumber), 5000); // Retry after 5 seconds
                     }
                 })
                 .catch(() => {
-                    // If there's an error, check if 40 seconds have passed
-                    const currentTime = Date.now();
-                    if (currentTime - startTime < 40000) {
-                        // If within 40 seconds, retry after 20 seconds
-                        loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
-                        setTimeout(() => fetchSummary(jobNumber, startTime), 20000);
-                    } else {
-                        // If 40 seconds have passed, show an error message
-                        loadingMessage.style.display = "none";
-                        summaryElement.innerHTML = `<p class='error'>Error fetching summary. Please check back later.</p>`;
-                    }
+                    // If there's an error, retry after a short delay
+                    loadingMessage.innerText = "We're still analyzing your request, please wait...";
+                    setTimeout(() => fetchSummary(jobNumber), 5000); // Retry after 5 seconds
                 });
         }
 
@@ -133,8 +117,7 @@
         const jobNumber = urlParams.get("job");
 
         if (jobNumber) {
-            const startTime = Date.now(); // Record the start time
-            fetchSummary(jobNumber, startTime);
+            fetchSummary(jobNumber);
         } else {
             document.querySelector(".loading").style.display = "none";
             document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
