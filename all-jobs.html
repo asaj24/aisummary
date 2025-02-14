@@ -126,7 +126,7 @@
     <script>
         async function fetchJobs() {
             try {
-                const response = await fetch("https://script.google.com/macros/s/AKfycby9duZTOZ9eZtkxoKUch2kizRTB8UoVtTOY2VnRA-Kmcj8rgZKWcTARb1OnssCJtjaR/exec");
+                const response = await fetch("https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec");
                 const jobs = await response.json();
                 const table = document.getElementById("jobTable");
                 table.innerHTML = "";
