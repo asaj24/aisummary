@@ -88,50 +88,53 @@
     </div>
 
     <script>
-        function fetchSummary(jobNumber, attempt = 1) {
+        function fetchSummary(jobNumber, startTime) {
             const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
             const loadingMessage = document.querySelector(".loading");
             const summaryElement = document.getElementById("summary");
 
-            let timeout = setTimeout(() => {
-                if (attempt === 1) {
-                    loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
-                    fetchSummary(jobNumber, 2); // Retry once
-                } else {
-                    loadingMessage.style.display = "none";
-                    summaryElement.innerHTML = `<p class='error'>Failed to fetch summary after multiple attempts. Please try again later.</p>`;
-                }
-            }, 20000); // 20-second timeout
-
             fetch(url)
                 .then(response => response.json())
                 .then(data => {
-                    clearTimeout(timeout); // Clear the timeout if the request completes
-                    loadingMessage.style.display = "none";
-                    
-                    if (data.error) {
-                        summaryElement.innerHTML = `<p class='error'>${data.error}. Please refresh or check later.</p>`;
-                    } else {
+                    if (data.summary) {
+                        // If summary is available, display it and stop retrying
+                        loadingMessage.style.display = "none";
                         summaryElement.innerText = data.summary;
+                    } else {
+                        // If summary is not available, check if 40 seconds have passed
+                        const currentTime = Date.now();
+                        if (currentTime - startTime < 40000) {
+                            // If within 40 seconds, retry after 20 seconds
+                            loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
+                            setTimeout(() => fetchSummary(jobNumber, startTime), 20000);
+                        } else {
+                            // If 40 seconds have passed, show an error message
+                            loadingMessage.style.display = "none";
+                            summaryElement.innerHTML = `<p class='error'>Summary not available yet. Please check back later.</p>`;
+                        }
                     }
                 })
                 .catch(() => {
-                    clearTimeout(timeout); // Clear the timeout if the request fails
-                    if (attempt === 1) {
+                    // If there's an error, check if 40 seconds have passed
+                    const currentTime = Date.now();
+                    if (currentTime - startTime < 40000) {
+                        // If within 40 seconds, retry after 20 seconds
                         loadingMessage.innerText = "We're trying to analyze again, please wait 20 more seconds...";
-                        fetchSummary(jobNumber, 2); // Retry once
+                        setTimeout(() => fetchSummary(jobNumber, startTime), 20000);
                     } else {
+                        // If 40 seconds have passed, show an error message
                         loadingMessage.style.display = "none";
-                        summaryElement.innerHTML = `<p class='error'>Error fetching summary. Please refresh or check back later.</p>`;
+                        summaryElement.innerHTML = `<p class='error'>Error fetching summary. Please check back later.</p>`;
                     }
                 });
         }
 
         const urlParams = new URLSearchParams(window.location.search);
         const jobNumber = urlParams.get("job");
-        
+
         if (jobNumber) {
-            fetchSummary(jobNumber);
+            const startTime = Date.now(); // Record the start time
+            fetchSummary(jobNumber, startTime);
         } else {
             document.querySelector(".loading").style.display = "none";
             document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
