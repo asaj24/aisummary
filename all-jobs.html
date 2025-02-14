@@ -5,11 +5,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>All Job Summaries</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-        th { background: #2E4660; color: #fff; }
-        a { text-decoration: none; color: #007BFF; font-weight: bold; }
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+            color: #2E4660;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        h2 {
+            font-family: 'Georgia', serif;
+            font-size: 32px;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #2E4660;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #2E4660;
+            color: #fff;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        tr:hover {
+            background: #f1f1f1;
+        }
+        a {
+            text-decoration: none;
+            color: #007BFF;
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+        a:hover {
+            color: #0056b3;
+        }
+        .print-button {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .print-button button {
+            background-color: #2E4660;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .print-button button:hover {
+            background-color: #1A2C3D;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .print-button {
+                display: none;
+            }
+            table {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+            th {
+                background: #2E4660 !important;
+                color: #fff !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -26,6 +103,10 @@
             <tr><td colspan="2">Loading...</td></tr>
         </tbody>
     </table>
+
+    <div class="print-button">
+        <button onclick="window.print()">Print Table</button>
+    </div>
 
     <script>
         async function fetchJobs() {
