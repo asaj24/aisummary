@@ -20,6 +20,18 @@
             margin-bottom: 20px;
             color: #2E4660;
         }
+        .search-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            outline: none;
+        }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -75,7 +87,7 @@
             body {
                 background: white;
             }
-            .print-button {
+            .print-button, .search-container {
                 display: none;
             }
             table {
@@ -92,6 +104,9 @@
 <body>
 
     <h2>All Job Summaries</h2>
+    <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Search by Job Number..." oninput="filterJobs()">
+    </div>
     <table>
         <thead>
             <tr>
@@ -132,6 +147,20 @@
             } catch (error) {
                 document.getElementById("jobTable").innerHTML = "<tr><td colspan='2'>Error loading jobs.</td></tr>";
             }
+        }
+
+        function filterJobs() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("#jobTable tr");
+
+            rows.forEach(row => {
+                const jobNumber = row.querySelector("td")?.textContent.toLowerCase();
+                if (jobNumber && jobNumber.includes(input)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
         }
 
         fetchJobs();
