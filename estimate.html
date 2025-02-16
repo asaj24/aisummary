@@ -5,7 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your Estimate Summary</title>
     <style>
-        /* (Your existing CSS remains unchanged) */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+            color: #2E4660;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-family: 'Georgia', serif;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #2E4660;
+        }
+        .loading {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E4660;
+        }
+        .error {
+            color: #FF4A4A;
+            font-weight: bold;
+        }
+        #summary {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #2E4660;
+        }
+        .print-button {
+            margin-top: 30px;
+        }
+        .print-button button {
+            background-color: #2E4660;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .print-button button:hover {
+            background-color: #1A2C3D;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .print-button {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -24,7 +93,7 @@
             const loadingMessage = document.querySelector(".loading");
             const summaryElement = document.getElementById("summary");
 
-            console.log(`Attempt ${attempt}`); // Debugging
+            console.log(`Fetching summary (Attempt ${attempt})...`); // Debugging
 
             fetch(url)
                 .then(response => response.json())
@@ -58,7 +127,7 @@
             let countdown = 20;
             const loadingMessage = document.querySelector(".loading");
 
-            // Immediately update message for the current attempt
+            // Update the loading message immediately
             loadingMessage.innerText = `Summary not available yet. Retrying in ${countdown} seconds... (Attempt ${attempt} of 3)`;
 
             const countdownInterval = setInterval(() => {
@@ -67,7 +136,7 @@
 
                 if (countdown <= 0) {
                     clearInterval(countdownInterval);
-                    fetchSummary(jobNumber, attempt + 1); // Retry without reloading
+                    fetchSummary(jobNumber, attempt + 1); // Retry with next attempt
                 }
             }, 1000);
         }
@@ -75,9 +144,9 @@
         // Parse URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const jobNumber = urlParams.get("job");
-        
+
         if (jobNumber) {
-            fetchSummary(jobNumber);
+            fetchSummary(jobNumber); // Start the first attempt
         } else {
             document.querySelector(".loading").style.display = "none";
             document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
