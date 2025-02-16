@@ -1,171 +1,155 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Your Estimate Summary</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
-      color: #2E4660;
-      padding: 20px;
-      margin: 0;
-      min-height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .container {
-      max-width: 600px;
-      width: 100%;
-      margin: auto;
-      padding: 30px;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    }
-    h2 {
-      font-family: 'Georgia', serif;
-      font-size: 32px;
-      margin-bottom: 20px;
-      color: #2E4660;
-    }
-    .loading {
-      font-size: 18px;
-      font-weight: bold;
-      color: #2E4660;
-    }
-    .error {
-      color: #FF4A4A;
-      font-weight: bold;
-    }
-    #summary {
-      font-size: 16px;
-      line-height: 1.6;
-      margin-top: 20px;
-      color: #2E4660;
-    }
-    #countdown {
-      font-size: 16px;
-      margin-top: 10px;
-      color: #2E4660;
-    }
-    .print-button {
-      margin-top: 30px;
-    }
-    .print-button button {
-      background-color: #2E4660;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-    .print-button button:hover {
-      background-color: #1A2C3D;
-    }
-    @media print {
-      body {
-        background: white;
-      }
-      .container {
-        box-shadow: none;
-        border: none;
-      }
-      .print-button {
-        display: none;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Estimate Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+            color: #2E4660;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-family: 'Georgia', serif;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #2E4660;
+        }
+        .loading {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E4660;
+        }
+        .error {
+            color: #FF4A4A;
+            font-weight: bold;
+        }
+        #summary {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #2E4660;
+        }
+        .print-button {
+            margin-top: 30px;
+        }
+        .print-button button {
+            background-color: #2E4660;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .print-button button:hover {
+            background-color: #1A2C3D;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .print-button {
+                display: none;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Your Estimate Summary</h2>
-    <p class="loading">Our AI is analyzing your request, please wait...</p>
-    <p id="countdown" style="display:none;"></p>
-    <p id="summary"></p>
-    <div class="print-button">
-      <button onclick="window.print()">Print Summary</button>
+    <div class="container">
+        <h2>Your Estimate Summary</h2>
+        <p class="loading">Our AI is analyzing your request, please wait...</p>
+        <p id="summary"></p>
+        <div class="print-button">
+            <button onclick="window.print()">Print Summary</button>
+        </div>
     </div>
-  </div>
 
-  <script>
-    // Fetch summary for the given job number
-    function fetchSummary(jobNumber) {
-      const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          if (data.summary && data.summary.trim() !== "") {
-            // Summary found: display it immediately
-            document.querySelector(".loading").style.display = "none";
-            document.getElementById("countdown").style.display = "none";
-            document.getElementById("summary").innerText = data.summary;
-          } else {
-            // Summary not found: start countdown and refresh
-            startCountdown(jobNumber);
-          }
-        })
-        .catch(() => {
-          // On error, also start countdown and refresh
-          startCountdown(jobNumber);
-        });
-    }
+    <script>
+        function fetchSummary(jobNumber, attempt = 1) {
+            const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
+            const loadingMessage = document.querySelector(".loading");
+            const summaryElement = document.getElementById("summary");
 
-    // Starts a 20-second countdown then refreshes the page
-    function startCountdown(jobNumber) {
-      let attempt = parseInt(getQueryParam("attempt")) || 0;
-      if (attempt >= 3) {
-        document.querySelector(".loading").style.display = "none";
-        document.getElementById("countdown").style.display = "none";
-        document.getElementById("summary").innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please check back later or contact support.</p>`;
-        return;
-      }
-      
-      let seconds = 20;
-      const countdownElem = document.getElementById("countdown");
-      countdownElem.style.display = "block";
-      countdownElem.innerText = `Summary not available yet. Retrying in ${seconds} seconds... (Attempt ${attempt + 1} of 3)`;
-
-      const intervalId = setInterval(() => {
-        seconds--;
-        countdownElem.innerText = `Summary not available yet. Retrying in ${seconds} seconds... (Attempt ${attempt + 1} of 3)`;
-        if (seconds <= 0) {
-          clearInterval(intervalId);
-          // Increase attempt count and refresh the page
-          attempt++;
-          const newUrl = updateQueryParam(window.location.href, "attempt", attempt);
-          window.location.href = newUrl;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.summary) {
+                        // If summary is available, display it
+                        loadingMessage.style.display = "none";
+                        summaryElement.innerText = data.summary;
+                    } else {
+                        // If summary is not available, show retry message
+                        if (attempt < 3) {
+                            loadingMessage.innerText = `Summary not available yet. Retrying in 20 seconds... (Attempt ${attempt} of 3)`;
+                            startCountdown(jobNumber, attempt);
+                        } else {
+                            // After 3 attempts, show final error message
+                            loadingMessage.style.display = "none";
+                            summaryElement.innerHTML = `<p class='error'>Summary not available after 3 attempts. Please check back later.</p>`;
+                        }
+                    }
+                })
+                .catch(() => {
+                    // If there's an error, show retry message
+                    if (attempt < 3) {
+                        loadingMessage.innerText = `Summary not available yet. Retrying in 20 seconds... (Attempt ${attempt} of 3)`;
+                        startCountdown(jobNumber, attempt);
+                    } else {
+                        // After 3 attempts, show final error message
+                        loadingMessage.style.display = "none";
+                        summaryElement.innerHTML = `<p class='error'>Error fetching summary after 3 attempts. Please check back later.</p>`;
+                    }
+                });
         }
-      }, 1000);
-    }
 
-    // Helper: Retrieve query parameter from URL
-    function getQueryParam(key) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(key);
-    }
+        function startCountdown(jobNumber, attempt) {
+            let countdown = 20;
+            const loadingMessage = document.querySelector(".loading");
 
-    // Helper: Update a query parameter in the URL
-    function updateQueryParam(url, key, value) {
-      const urlObj = new URL(url);
-      urlObj.searchParams.set(key, value);
-      return urlObj.toString();
-    }
+            const countdownInterval = setInterval(() => {
+                loadingMessage.innerText = `Summary not available yet. Retrying in ${countdown} seconds... (Attempt ${attempt} of 3)`;
+                countdown--;
 
-    // Main execution: get job number from URL and start fetching summary
-    const urlParams = new URLSearchParams(window.location.search);
-    const jobNumber = urlParams.get("job");
-    if (jobNumber) {
-      fetchSummary(jobNumber);
-    } else {
-      document.querySelector(".loading").style.display = "none";
-      document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
-    }
-  </script>
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = `?job=${jobNumber}&attempt=${attempt + 1}`; // Reload with increased attempt count
+                }
+            }, 1000);
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const jobNumber = urlParams.get("job");
+        const attempt = parseInt(urlParams.get("attempt")) || 1;
+
+        if (jobNumber) {
+            fetchSummary(jobNumber, attempt);
+        } else {
+            document.querySelector(".loading").style.display = "none";
+            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
+        }
+    </script>
 </body>
 </html>
