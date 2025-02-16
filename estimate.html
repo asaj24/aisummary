@@ -1,137 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Estimate Summary</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
-            color: #2E4660;
-            padding: 20px;
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .container {
-            max-width: 600px;
-            width: 100%;
-            margin: auto;
-            padding: 30px;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            font-family: 'Georgia', serif;
-            font-size: 32px;
-            margin-bottom: 20px;
-            color: #2E4660;
-        }
-        .loading {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2E4660;
-        }
-        .error {
-            color: #FF4A4A;
-            font-weight: bold;
-        }
-        #summary {
-            font-size: 16px;
-            line-height: 1.6;
-            margin-top: 20px;
-            color: #2E4660;
-        }
-        .print-button {
-            margin-top: 30px;
-        }
-        .print-button button {
-            background-color: #2E4660;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .print-button button:hover {
-            background-color: #1A2C3D;
-        }
-        @media print {
-            body {
-                background: white;
-            }
-            .container {
-                box-shadow: none;
-                border: none;
-            }
-            .print-button {
-                display: none;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Estimate Summary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+      color: #2E4660;
+      padding: 20px;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      max-width: 600px;
+      width: 100%;
+      margin: auto;
+      padding: 30px;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      font-family: 'Georgia', serif;
+      font-size: 32px;
+      margin-bottom: 20px;
+      color: #2E4660;
+    }
+    .loading {
+      font-size: 18px;
+      font-weight: bold;
+      color: #2E4660;
+    }
+    .error {
+      color: #FF4A4A;
+      font-weight: bold;
+    }
+    #summary {
+      font-size: 16px;
+      line-height: 1.6;
+      margin-top: 20px;
+      color: #2E4660;
+    }
+    .print-button {
+      margin-top: 30px;
+    }
+    .print-button button {
+      background-color: #2E4660;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    .print-button button:hover {
+      background-color: #1A2C3D;
+    }
+    @media print {
+      body {
+        background: white;
+      }
+      .container {
+        box-shadow: none;
+        border: none;
+      }
+      .print-button {
+        display: none;
+      }
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Your Estimate Summary</h2>
-        <p class="loading">Our AI is analyzing your request, please wait...</p>
-        <p id="summary"></p>
-        <div class="print-button">
-            <button onclick="window.print()">Print Summary</button>
-        </div>
+  <div class="container">
+    <h2>Your Estimate Summary</h2>
+    <p class="loading">Our AI is analyzing your request, please wait...</p>
+    <p id="summary"></p>
+    <div class="print-button">
+      <button onclick="window.print()">Print Summary</button>
     </div>
+  </div>
 
-    <script>
-        function fetchSummary(jobNumber, attempts = 0) {
-            const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
-            const loadingMessage = document.querySelector(".loading");
-            const summaryElement = document.getElementById("summary");
+  <script>
+    function fetchSummary(jobNumber, attempts = 0) {
+      const url = `https://script.google.com/macros/s/AKfycbxoFfSgf4sCQ3vgvpPN6JQX1WMCdoBOdiiyGAVOKWrfRYGcbgfVaubsSCD2s1mq7Tbn/exec?job=${jobNumber}`;
+      const loadingMessage = document.querySelector(".loading");
+      const summaryElement = document.getElementById("summary");
 
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.summary) {
-                        // Summary found: display it and stop checking
-                        loadingMessage.style.display = "none";
-                        summaryElement.innerText = data.summary;
-                    } else if (attempts < 60) {
-                        // Retry after 5 seconds (max 60 attempts = 5 minutes)
-                        loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
-                        setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
-                    } else {
-                        // If max attempts reached, show error
-                        loadingMessage.style.display = "none";
-                        summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't find your estimate. Please check back later or contact support.</p>`;
-                    }
-                })
-                .catch(() => {
-                    // Retry on error (same 60-attempt limit applies)
-                    if (attempts < 60) {
-                        loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
-                        setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
-                    } else {
-                        loadingMessage.style.display = "none";
-                        summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please try again later.</p>`;
-                    }
-                });
-        }
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          if (data.summary && data.summary.trim() !== "") {
+            // If summary is available, display it and stop retrying
+            loadingMessage.style.display = "none";
+            summaryElement.innerText = data.summary;
+          } else if (attempts < 60) {
+            // If summary is not available, retry after 5 seconds (attempts up to 60 = 5 minutes)
+            loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
+            setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
+          } else {
+            // Max attempts reached: show error message
+            loadingMessage.style.display = "none";
+            summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please check back later or contact support.</p>`;
+          }
+        })
+        .catch(() => {
+          // On error, retry until max attempts
+          if (attempts < 60) {
+            loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
+            setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
+          } else {
+            loadingMessage.style.display = "none";
+            summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please try again later.</p>`;
+          }
+        });
+    }
 
-        // Get job number from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const jobNumber = urlParams.get("job");
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobNumber = urlParams.get("job");
 
-        if (jobNumber) {
-            fetchSummary(jobNumber);
-        } else {
-            document.querySelector(".loading").style.display = "none";
-            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
-        }
-    </script>
+    if (jobNumber) {
+      fetchSummary(jobNumber);
+    } else {
+      document.querySelector(".loading").style.display = "none";
+      document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
+    }
+  </script>
 </body>
 </html>
