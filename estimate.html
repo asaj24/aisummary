@@ -47,6 +47,11 @@
       margin-top: 20px;
       color: #2E4660;
     }
+    #countdown {
+      font-size: 16px;
+      margin-top: 10px;
+      color: #2E4660;
+    }
     .print-button {
       margin-top: 30px;
     }
@@ -81,6 +86,7 @@
   <div class="container">
     <h2>Your Estimate Summary</h2>
     <p class="loading">Our AI is analyzing your request, please wait...</p>
+    <p id="countdown" style="display:none;"></p>
     <p id="summary"></p>
     <div class="print-button">
       <button onclick="window.print()">Print Summary</button>
@@ -88,43 +94,72 @@
   </div>
 
   <script>
-    function fetchSummary(jobNumber, attempts = 0) {
+    // Fetch summary for the given job number
+    function fetchSummary(jobNumber) {
       const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
-      const loadingMessage = document.querySelector(".loading");
-      const summaryElement = document.getElementById("summary");
-
       fetch(url)
         .then(response => response.json())
         .then(data => {
           if (data.summary && data.summary.trim() !== "") {
-            // If summary is available, display it and stop retrying
-            loadingMessage.style.display = "none";
-            summaryElement.innerText = data.summary;
-          } else if (attempts < 60) {
-            // If summary is not available, retry after 5 seconds (attempts up to 60 = 5 minutes)
-            loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
-            setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
+            // Summary found: display it immediately
+            document.querySelector(".loading").style.display = "none";
+            document.getElementById("countdown").style.display = "none";
+            document.getElementById("summary").innerText = data.summary;
           } else {
-            // Max attempts reached: show error message
-            loadingMessage.style.display = "none";
-            summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please check back later or contact support.</p>`;
+            // Summary not found: start countdown and refresh
+            startCountdown(jobNumber);
           }
         })
         .catch(() => {
-          // On error, retry until max attempts
-          if (attempts < 60) {
-            loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
-            setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
-          } else {
-            loadingMessage.style.display = "none";
-            summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please try again later.</p>`;
-          }
+          // On error, also start countdown and refresh
+          startCountdown(jobNumber);
         });
     }
 
+    // Starts a 20-second countdown then refreshes the page
+    function startCountdown(jobNumber) {
+      let attempt = parseInt(getQueryParam("attempt")) || 0;
+      if (attempt >= 3) {
+        document.querySelector(".loading").style.display = "none";
+        document.getElementById("countdown").style.display = "none";
+        document.getElementById("summary").innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please check back later or contact support.</p>`;
+        return;
+      }
+      
+      let seconds = 20;
+      const countdownElem = document.getElementById("countdown");
+      countdownElem.style.display = "block";
+      countdownElem.innerText = `Summary not available yet. Retrying in ${seconds} seconds... (Attempt ${attempt + 1} of 3)`;
+
+      const intervalId = setInterval(() => {
+        seconds--;
+        countdownElem.innerText = `Summary not available yet. Retrying in ${seconds} seconds... (Attempt ${attempt + 1} of 3)`;
+        if (seconds <= 0) {
+          clearInterval(intervalId);
+          // Increase attempt count and refresh the page
+          attempt++;
+          const newUrl = updateQueryParam(window.location.href, "attempt", attempt);
+          window.location.href = newUrl;
+        }
+      }, 1000);
+    }
+
+    // Helper: Retrieve query parameter from URL
+    function getQueryParam(key) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(key);
+    }
+
+    // Helper: Update a query parameter in the URL
+    function updateQueryParam(url, key, value) {
+      const urlObj = new URL(url);
+      urlObj.searchParams.set(key, value);
+      return urlObj.toString();
+    }
+
+    // Main execution: get job number from URL and start fetching summary
     const urlParams = new URLSearchParams(window.location.search);
     const jobNumber = urlParams.get("job");
-
     if (jobNumber) {
       fetchSummary(jobNumber);
     } else {
