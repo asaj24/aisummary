@@ -1,9 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Keep the same styles as before -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Estimate Summary</title>
     <style>
-        /* ... (your existing styles remain unchanged) ... */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
+            color: #2E4660;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            margin: auto;
+            padding: 30px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            font-family: 'Georgia', serif;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #2E4660;
+        }
+        .loading {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2E4660;
+        }
+        .error {
+            color: #FF4A4A;
+            font-weight: bold;
+        }
+        #summary {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-top: 20px;
+            color: #2E4660;
+        }
+        .print-button {
+            margin-top: 30px;
+        }
+        .print-button button {
+            background-color: #2E4660;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .print-button button:hover {
+            background-color: #1A2C3D;
+        }
+        @media print {
+            body {
+                background: white;
+            }
+            .container {
+                box-shadow: none;
+                border: none;
+            }
+            .print-button {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -17,41 +88,41 @@
     </div>
 
     <script>
-        // Persistent polling configuration
-        const RETRY_DELAY = 5000; // 5 seconds between checks
-        const MAX_ATTEMPTS = 100; // Safety net to prevent infinite loops
-
-        async function fetchSummary(jobNumber, attempt = 1) {
+        function fetchSummary(jobNumber, attempts = 0) {
             const url = `https://script.google.com/macros/s/AKfycbzWVppfxixLnJg33cL6mzSSd-FOB_5V4Ykq5UjnFBLe7VThLCWwEG8nXWwjPaw2cuSE/exec?job=${jobNumber}`;
             const loadingMessage = document.querySelector(".loading");
             const summaryElement = document.getElementById("summary");
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.summary) {
-                    // Success case: Show summary and stop polling
-                    loadingMessage.style.display = "none";
-                    summaryElement.innerText = data.summary;
-                } else {
-                    // No summary yet: Keep polling
-                    loadingMessage.innerText = "Our AI is still processing your request...";
-                    if (attempt <= MAX_ATTEMPTS) {
-                        setTimeout(() => fetchSummary(jobNumber, attempt + 1), RETRY_DELAY);
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.summary) {
+                        // Summary found: display it and stop checking
+                        loadingMessage.style.display = "none";
+                        summaryElement.innerText = data.summary;
+                    } else if (attempts < 60) {
+                        // Retry after 5 seconds (max 60 attempts = 5 minutes)
+                        loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
+                        setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
+                    } else {
+                        // If max attempts reached, show error
+                        loadingMessage.style.display = "none";
+                        summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't find your estimate. Please check back later or contact support.</p>`;
                     }
-                }
-            } catch (error) {
-                // Error case: Retry quietly
-                console.error("Fetch error:", error);
-                loadingMessage.innerText = "Checking for updates...";
-                if (attempt <= MAX_ATTEMPTS) {
-                    setTimeout(() => fetchSummary(jobNumber, attempt + 1), RETRY_DELAY);
-                }
-            }
+                })
+                .catch(() => {
+                    // Retry on error (same 60-attempt limit applies)
+                    if (attempts < 60) {
+                        loadingMessage.innerText = `We're still analyzing your request, please wait... (${attempts + 1}/60)`;
+                        setTimeout(() => fetchSummary(jobNumber, attempts + 1), 5000);
+                    } else {
+                        loadingMessage.style.display = "none";
+                        summaryElement.innerHTML = `<p class='error'>Sorry, we couldn't retrieve your estimate. Please try again later.</p>`;
+                    }
+                });
         }
 
-        // Initial setup
+        // Get job number from URL
         const urlParams = new URLSearchParams(window.location.search);
         const jobNumber = urlParams.get("job");
 
@@ -59,8 +130,7 @@
             fetchSummary(jobNumber);
         } else {
             document.querySelector(".loading").style.display = "none";
-            document.getElementById("summary").innerHTML = 
-                `<p class='error'>Job number missing. Please check your URL.</p>`;
+            document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
         }
     </script>
 </body>
