@@ -88,12 +88,15 @@
     </div>
 
     <script>
+        let countdownInterval = null;
+
         function fetchSummary(jobNumber) {
             const url = `https://script.google.com/macros/s/AKfycbxbQnRLBI0-vBze4T2u8SQEKTBLwNeFQ849pAJioiyuBZiKnaDLOzl-QuoJBu8LNKNm/exec?job=${jobNumber}`;
             const loadingMessage = document.querySelector(".loading");
             const summaryElement = document.getElementById("summary");
 
-            console.log(`Fetching summary for job ${jobNumber}...`); // Debugging
+            // Clear any existing countdown
+            if(countdownInterval) clearInterval(countdownInterval);
 
             fetch(url)
                 .then(response => response.json())
@@ -103,17 +106,33 @@
                         loadingMessage.style.display = "none";
                         summaryElement.innerText = data.summary;
                     } else {
-                        // If summary is not available, retry after 20 seconds
-                        loadingMessage.innerText = data.message || "Summary not available yet. Retrying in 20 seconds...";
-                        setTimeout(() => fetchSummary(jobNumber), 20000); // Retry after 20 seconds
+                        // Start countdown for retry
+                        startCountdown(jobNumber, 20);
                     }
                 })
                 .catch(error => {
-                    console.error("Fetch error:", error); // Debugging
-                    // If there's an error, retry after 20 seconds
-                    loadingMessage.innerText = "Summary not available yet. Retrying in 20 seconds...";
-                    setTimeout(() => fetchSummary(jobNumber), 20000); // Retry after 20 seconds
+                    console.error("Fetch error:", error);
+                    // Start countdown for retry
+                    startCountdown(jobNumber, 20);
                 });
+        }
+
+        function startCountdown(jobNumber, seconds) {
+            const loadingMessage = document.querySelector(".loading");
+            let countdown = seconds;
+            
+            // Update immediately
+            loadingMessage.innerHTML = `Summary not available yet.<br>Next check in ${countdown} seconds...`;
+
+            countdownInterval = setInterval(() => {
+                countdown--;
+                loadingMessage.innerHTML = `Summary not available yet.<br>Next check in ${countdown} seconds...`;
+
+                if(countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    fetchSummary(jobNumber);
+                }
+            }, 1000);
         }
 
         // Parse URL parameters
@@ -121,7 +140,7 @@
         const jobNumber = urlParams.get("job");
 
         if (jobNumber) {
-            fetchSummary(jobNumber); // Start fetching the summary
+            fetchSummary(jobNumber);
         } else {
             document.querySelector(".loading").style.display = "none";
             document.getElementById("summary").innerHTML = `<p class='error'>Job number missing.</p>`;
