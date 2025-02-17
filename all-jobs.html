@@ -1,174 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>All Job Summaries</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #F5E9D9, #D9C8B2);
-            color: #2E4660;
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-        }
-        h2 {
-            font-family: 'Georgia', serif;
-            font-size: 32px;
-            text-align: center;
-            margin-bottom: 20px;
-            color: #2E4660;
-        }
-        .search-container {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .search-container input {
-            padding: 10px;
-            width: 300px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            outline: none;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-        th, td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        th {
-            background: #2E4660;
-            color: #fff;
-            font-weight: bold;
-        }
-        tr:nth-child(even) {
-            background: #f9f9f9;
-        }
-        tr:hover {
-            background: #f1f1f1;
-        }
-        a {
-            text-decoration: none;
-            color: #007BFF;
-            font-weight: bold;
-            transition: color 0.3s ease;
-        }
-        a:hover {
-            color: #0056b3;
-        }
-        .print-button {
-            text-align: center;
-            margin-top: 30px;
-        }
-        .print-button button {
-            background-color: #2E4660;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        .print-button button:hover {
-            background-color: #1A2C3D;
-        }
-        @media print {
-            body {
-                background: white;
-            }
-            .print-button, .search-container {
-                display: none;
-            }
-            table {
-                box-shadow: none;
-                border: 1px solid #ddd;
-            }
-            th {
-                background: #2E4660 !important;
-                color: #fff !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Job Summaries</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #F5E9D9;
+      margin: 20px;
+      color: #2E4660;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      text-align: center;
+    }
+    h2 {
+      margin-bottom: 20px;
+    }
+    .search-box {
+      margin-bottom: 20px;
+    }
+    .search-box input {
+      width: 300px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    th {
+      background: #2E4660;
+      color: #fff;
+    }
+    a {
+      text-decoration: none;
+      color: #007BFF;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
-
+  <div class="container">
     <h2>All Job Summaries</h2>
-    <div class="search-container">
-        <input type="text" id="searchInput" placeholder="Search by Job Number..." oninput="filterJobs()">
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="Search by Job Number">
     </div>
     <table>
-        <thead>
-            <tr>
-                <th>Job Number</th>
-                <th>Summary</th>
-            </tr>
-        </thead>
-        <tbody id="jobTable">
-            <tr><td colspan="2">Loading...</td></tr>
-        </tbody>
+      <thead>
+        <tr>
+          <th>Job Number</th>
+          <th>Summary</th>
+        </tr>
+      </thead>
+      <tbody id="jobTable">
+        <tr><td colspan="2">Loading...</td></tr>
+      </tbody>
     </table>
+  </div>
 
-    <div class="print-button">
-        <button onclick="window.print()">Print Table</button>
-    </div>
+  <script>
+    async function fetchJobs() {
+      try {
+        const response = await fetch("https://script.google.com/macros/s/AKfycbynZ1sQmcKkbTzFv6mRKCg0bxbqBRZsnkA3mu5NoDfz2BBYuE0XyjeGIVi_Ob1v2dDz/exec");
+        const jobs = await response.json();
+        populateTable(jobs);
+      } catch (error) {
+        document.getElementById("jobTable").innerHTML = "<tr><td colspan='2'>Error loading jobs.</td></tr>";
+      }
+    }
 
-    <script>
-        async function fetchJobs() {
-            try {
-                // Use your deployed Google Apps Script URL
-                const response = await fetch("https://script.google.com/macros/s/AKfycbzaBd8R_lZCgS4dfFYLP7VZXKRg1yxkPtl06hZ5BJacQm-Be7uSHfe93X4dtgJ-2F_A/exec");
-                const jobs = await response.json();
+    function populateTable(jobs) {
+      const table = document.getElementById("jobTable");
+      table.innerHTML = "";
 
-                const table = document.getElementById("jobTable");
-                table.innerHTML = "";
+      if (jobs.length === 0) {
+        table.innerHTML = "<tr><td colspan='2'>No job summaries available.</td></tr>";
+        return;
+      }
 
-                if (jobs.length === 0) {
-                    table.innerHTML = "<tr><td colspan='2'>No job summaries available.</td></tr>";
-                    return;
-                }
+      jobs.forEach(job => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><a href="estimate.html?job=${job.jobNumber}">${job.jobNumber}</a></td>
+          <td>${job.summary}</td>
+        `;
+        table.appendChild(row);
+      });
+    }
 
-                jobs.forEach(job => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td><a href="estimate.html?job=${job.jobNumber}">${job.jobNumber}</a></td>
-                        <td>${job.summary}</td>
-                    `;
-                    table.appendChild(row);
-                });
-            } catch (error) {
-                document.getElementById("jobTable").innerHTML = "<tr><td colspan='2'>Error loading jobs. Please try again later.</td></tr>";
-                console.error("Error fetching jobs:", error);
-            }
+    function filterTable() {
+      const input = document.getElementById("searchInput");
+      const filter = input.value.toUpperCase();
+      const table = document.getElementById("jobTable");
+      const rows = table.getElementsByTagName("tr");
+
+      for (let i = 0; i < rows.length; i++) {
+        const jobCell = rows[i].getElementsByTagName("td")[0];
+        if (jobCell) {
+          const txtValue = jobCell.textContent || jobCell.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            rows[i].style.display = "";
+          } else {
+            rows[i].style.display = "none";
+          }
         }
+      }
+    }
 
-        function filterJobs() {
-            const input = document.getElementById("searchInput").value.toLowerCase();
-            const rows = document.querySelectorAll("#jobTable tr");
+    document.getElementById("searchInput").addEventListener("keyup", filterTable);
 
-            rows.forEach(row => {
-                const jobNumber = row.querySelector("td")?.textContent.toLowerCase();
-                if (jobNumber && jobNumber.includes(input)) {
-                    row.style.display = "";
-                } else {
-                    row.style.display = "none";
-                }
-            });
-        }
-
-        // Fetch jobs when the page loads
-        fetchJobs();
-    </script>
-
+    fetchJobs();
+  </script>
 </body>
 </html>
